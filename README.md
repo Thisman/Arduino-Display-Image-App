@@ -11,7 +11,9 @@ App will connect with `COM4`
 ```js
 git clone https://github.com/Thisman/Arduino-Display-Image-App.git
 cd Arduino-Display-Image-App
-npm install && npm start
+npm install 
+npm run build
+npm run start
 ```
 
 # TODO

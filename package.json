@@ -1,0 +1,34 @@
+{
+  "name": "arduino-gif-maker",
+  "version": "1.0.0",
+  "description": "App for control ArduinoGifDisplay",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "install": "electron-rebuild",
+    "dev": "webpack --watch --colors",
+    "build": "webpack --colors"
+  },
+  "author": "Thisman",
+  "devDependencies": {
+    "babel-cli": "^6.24.0",
+    "babel-loader": "^6.4.1",
+    "babel-plugin-transform-object-rest-spread": "^6.23.0",
+    "babel-preset-env": "^1.2.2",
+    "babel-preset-react": "^6.23.0",
+    "electron": "~1.6.2",
+    "electron-rebuild": "^1.5.7",
+    "css-loader": "^0.27.3",
+    "webpack": "^2.3.2",
+    "extract-text-webpack-plugin": "^2.1.0",
+    "style-loader": "^0.16.0"
+  },
+  "dependencies": {
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "react-redux": "^5.0.3",
+    "redux": "^3.6.0",
+    "redux-logger": "^3.0.0",
+    "serialport": "^4.0.7"
+  }
+}

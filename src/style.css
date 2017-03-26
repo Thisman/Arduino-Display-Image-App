@@ -1,0 +1,83 @@
+* {
+	box-sizing: border-box;
+}
+
+html, 
+body {
+	font-family: Arial, sans-serif;
+}
+
+#system-info {
+	margin: 8px 0;
+	line-height: 25px;
+	height: 25px;
+}
+
+.controls {
+	margin-bottom: 16px;
+}
+
+.table-row {
+	display: flex;
+	flex-wrap: wrap;
+	width: calc(32 * 25px)
+}
+
+.table-cell {
+	width: 25px;
+	height: 25px;
+	border: 1px solid #ddd;
+	cursor: pointer;
+}
+
+.table-cell[data-is-active='true'] {
+	background: #333;
+	border: 1px solid #333;
+}
+
+.controls .button {
+	margin-right: 8px;
+}
+
+.frames-list {
+	padding: 16px 0;
+	display: flex;
+	flex-wrap: nowrap;
+	overflow-x: auto;
+}
+
+.saved-frame {
+	position: relative;
+	width: 50px;
+	height: 50px;
+	margin-right: 8px;
+	flex-shrink: 0;
+}
+
+.saved-frame:before {
+    content: attr(data-index);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+    line-height: 50px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.saved-frame[data-is-active='true']:before {
+	background: #333;
+	color: #fff;
+}
+
+.saved-frame[data-in-animation='true']:before {
+	background: #009688;
+	color: #fff;
+}

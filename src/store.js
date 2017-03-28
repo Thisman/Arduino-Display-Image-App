@@ -1,6 +1,7 @@
 import {combineReducers} from 'redux'
 
 const INIT_FRAMES = 'INIT_FRAMES'
+const LOAD_FRAMES = 'LOAD_FRAMES'
 const CLEAR_FRAME = 'CLEAR_FRAME'
 const CREATE_FRAME = 'CREATE_FRAME'
 const CHANGE_FRAME = 'CHANGE_FRAME'
@@ -44,10 +45,21 @@ function gifMaker(state = initialState, action) {
                 frames,
             }
         }
+        case LOAD_FRAMES: {
+            const {frames} = payload
+
+            return {
+                ...state,
+                frames,
+                currentFrame: 0,
+            }
+        }
         case CREATE_FRAME: {
             let {currentFrame} = state
             const {width, height, frames} = state
-            const newFrame = createEmptyFrame(width, height)
+            const newFrame = JSON.parse(JSON.stringify(
+                frames[currentFrame]
+            ))
             
             frames.push(newFrame)
             currentFrame = frames.length - 1
@@ -143,4 +155,8 @@ export const deleteFrame = () => ({
 export const changeCurrentFrame = (index) => ({
     type: CHANGE_CURRENT_FRAME,
     payload: {index}
+})
+export const loadFrames = (frames) => ({
+    type: LOAD_FRAMES,
+    payload: {frames}
 })

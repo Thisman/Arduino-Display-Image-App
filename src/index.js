@@ -1,7 +1,3 @@
-// This file is required by the index.html file and will
-// be executed in the renderer process for that window.
-// All of the Node.js APIs are available in this process.
-
 import React from 'react'
 import ReactDom from "react-dom"
 import logger from "redux-logger"
@@ -11,6 +7,7 @@ import {createStore, applyMiddleware} from "redux"
 import "./style.css"
 
 import createReducers, {
+    loadFrames,
     initFrames,
     clearFrame,
     createFrame,
@@ -21,24 +18,15 @@ import createReducers, {
 
 import {transformFrameToBin} from "./utils.js"
 
+import Button from "./components/Button/"
+import TableCell from "./components/TableCell/"
+import Frame from "./components/Frame/"
+
 let enhancer = null
 if('production' !== process.env.NODE_ENV)
     enhancer = applyMiddleware(logger)
 
 const store = createStore(createReducers(), enhancer)
-
-class Cell extends React.Component {
-    shouldComponentUpdate(props) {
-        return this.props['data-is-active'] != props['data-is-active']
-    }
-    render() {
-        return (
-            <div className='table-cell'
-                {...this.props}
-            />
-        )
-    }
-}
 
 class App extends React.Component {
     constructor() {
@@ -53,10 +41,12 @@ class App extends React.Component {
 
         this.handleClick = this.handleClick.bind(this)
         this.handleSendFrame = this.handleSendFrame.bind(this)
+        this.handleSaveAsFile = this.handleSaveAsFile.bind(this)
         this.handleClearFrame = this.handleClearFrame.bind(this)
         this.handleChooseFrame = this.handleChooseFrame.bind(this)
         this.handleStopAnimation = this.handleStopAnimation.bind(this)
         this.handleStartAnimation = this.handleStartAnimation.bind(this)
+        this.handleLoadFrameAsFile = this.handleLoadFrameAsFile.bind(this)
     }
     componentDidMount() {
         this.props.initFrames(
@@ -73,36 +63,42 @@ class App extends React.Component {
         return (
             <div className='app'>
                 <div className='controls'>
-                    <button className='button' onClick={this.handleSendFrame}>
+                    <Button onClick={this.handleSendFrame}>
                         Send
-                    </button>
-                    <button className='button' onClick={this.handleClearFrame}>
+                    </Button>
+                    <Button onClick={this.handleClearFrame}>
                         Clear
-                    </button>
-                    <button className='button' onClick={this.props.createFrame}>
+                    </Button>
+                    <Button onClick={this.props.createFrame}>
                         New Frame
-                    </button>
+                    </Button>
+                    <Button onClick={this.handleSaveAsFile}>
+                        Save Frames as File
+                    </Button>
+                    <Button onClick={this.handleLoadFrameAsFile}>
+                        Load Frames as File
+                    </Button>
                     {frames.length &&
-                        <button className='button' onClick={this.props.deleteFrame}>
+                        <Button onClick={this.props.deleteFrame}>
                             Delete Frame
-                        </button>
+                        </Button>
                     }
                     {!!isAnimationInProgress &&
-                        <button className='button' onClick={this.handleStopAnimation}>
+                        <Button onClick={this.handleStopAnimation}>
                             Stop Animation
-                        </button>
+                        </Button>
                     }
                     {!isAnimationInProgress &&
-                        <button className='button' onClick={this.handleStartAnimation}>
+                        <Button onClick={this.handleStartAnimation}>
                             Start Animation
-                        </button>
+                        </Button>
                     }
                 </div>
                 <div className ='table'>
                     {frame.map( (f, y) =>
                         <div className='table-row' key={y}>
                             {f.map( (c, x) =>
-                                <Cell key={x}
+                                <TableCell key={x}
                                     data-x={x}
                                     data-y={y}
                                     data-is-active={!!frame[y][x]}
@@ -114,9 +110,8 @@ class App extends React.Component {
                 </div>
                 <div className='frames-list'>
                     {frames.map( (f, k) =>
-                        <div key={k}
+                        <Frame key={k}
                             data-index={k}
-                            className='saved-frame'
                             data-is-active={currentFrame == k}
                             data-in-animation={
                                 isAnimationInProgress &&
@@ -138,14 +133,15 @@ class App extends React.Component {
         this.props.changeFrame(x, y)
     }
     handleClearFrame() {
+
         this.props.clearFrame()
     }
     handleSendFrame() {
-        const {serialport} = window
+        const {nativeUtils} = window
         const {frameWidth} = this.state
         const {frame} = this.props
 
-        serialport.port.write(
+        nativeUtils.port.write(
             transformFrameToBin(frame),
             function() {}
         )
@@ -157,14 +153,14 @@ class App extends React.Component {
         this.props.changeCurrentFrame(index)
     }
     handleStartAnimation() {
-
+        const {nativeUtils} = window
         const {frames} = this.props
 
         const animationHandler = () => {
             let {frameInAnimation, isAnimationInProgress} = this.state
             const frame = frames[frameInAnimation]
 
-            serialport.port.write(transformFrameToBin(frame), () => {
+            nativeUtils.port.write(transformFrameToBin(frame), () => {
                 frameInAnimation++
                 if(frameInAnimation >= frames.length)
                     frameInAnimation = 0
@@ -185,6 +181,32 @@ class App extends React.Component {
             frameInAnimation: 0
         })
     }
+    handleSaveAsFile() {
+        const {nativeUtils} = window
+        const {frames} = this.props
+        
+        const pathToSave = nativeUtils.dialog.showSaveDialog()
+
+        if(!pathToSave) return
+
+        nativeUtils.saveFile(pathToSave, frames)
+    }
+    handleLoadFrameAsFile() {
+        const {nativeUtils} = window
+        
+        const pathToLoad = nativeUtils.dialog.showOpenDialog({
+            properties: ['openFile'],
+            filters: [{name: 'Frames', extensions: ['json']}],
+        })
+
+        if(!pathToLoad) return
+
+        const framesFromFile = nativeUtils.loadFile(pathToLoad[0])
+
+        if(!framesFromFile) return
+
+        this.props.loadFrames(framesFromFile)
+    }
 }
 
 const maptStateToProps = ({gifMaker}) => ({
@@ -194,6 +216,7 @@ const maptStateToProps = ({gifMaker}) => ({
 })
 const mapDispatchToProps = dispatch => ({
     initFrames: (...args) => dispatch(initFrames(...args)),
+    loadFrames: (...args) => dispatch(loadFrames(...args)),
     clearFrame: (...args) => dispatch(clearFrame(...args)),
     changeFrame: (...args) => dispatch(changeFrame(...args)),
     deleteFrame: (...args) => dispatch(deleteFrame(...args)),

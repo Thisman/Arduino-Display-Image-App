@@ -40,7 +40,6 @@ class App extends React.Component {
         }
 
         this.handleClick = this.handleClick.bind(this)
-        this.handleSendFrame = this.handleSendFrame.bind(this)
         this.handleSaveAsFile = this.handleSaveAsFile.bind(this)
         this.handleClearFrame = this.handleClearFrame.bind(this)
         this.handleChooseFrame = this.handleChooseFrame.bind(this)
@@ -63,9 +62,6 @@ class App extends React.Component {
         return (
             <div className='app'>
                 <div className='controls'>
-                    <Button onClick={this.handleSendFrame}>
-                        Send
-                    </Button>
                     <Button onClick={this.handleClearFrame}>
                         Clear
                     </Button>
@@ -136,16 +132,6 @@ class App extends React.Component {
 
         this.props.clearFrame()
     }
-    handleSendFrame() {
-        const {nativeUtils} = window
-        const {frameWidth} = this.state
-        const {frame} = this.props
-
-        nativeUtils.port.write(
-            transformFrameToBin(frame),
-            function() {}
-        )
-    }
     handleChooseFrame(e) {
         const target = e.currentTarget
         const index = +target.getAttribute('data-index')
@@ -159,17 +145,20 @@ class App extends React.Component {
         const animationHandler = () => {
             let {frameInAnimation, isAnimationInProgress} = this.state
             const frame = frames[frameInAnimation]
+            let timeout;
 
             nativeUtils.port.write(transformFrameToBin(frame), () => {
                 frameInAnimation++
                 if(frameInAnimation >= frames.length)
                     frameInAnimation = 0
                 
-                if(!isAnimationInProgress) return
-                setTimeout(() => {
+                if(!isAnimationInProgress)
+                    return clearTimeout(timeout)
+
+                timeout = setTimeout(() => {
                     this.setState({frameInAnimation})
                     animationHandler()
-                }, 500)
+                }, 400)
             })
         }
 

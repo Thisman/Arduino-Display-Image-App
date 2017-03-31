@@ -10,7 +10,7 @@ const connetToPort = () => {
 	const systemInfoBlock = document.getElementById('system-info')
 	try {
 		const port = new serialport('COM4', {
-			baudRate: 115200
+			baudRate: 250000
 		})
 
 		port.on('open', (err) => {

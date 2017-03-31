@@ -158,7 +158,7 @@ class App extends React.Component {
                 timeout = setTimeout(() => {
                     this.setState({frameInAnimation})
                     animationHandler()
-                }, 400)
+                }, 250)
             })
         }
 

@@ -35,7 +35,6 @@ class App extends React.Component {
         this.state = {
             frameWidth: 32,
             frameHeight: 8,
-            frameInAnimation: 0,
             isAnimationInProgress: false
         }
 
@@ -55,7 +54,7 @@ class App extends React.Component {
     }
     render() {
         const {frame, frames, currentFrame} = this.props
-        const {frameInAnimation, isAnimationInProgress} = this.state
+        const {isAnimationInProgress} = this.state
 
         if(!frame) return null
 
@@ -111,7 +110,7 @@ class App extends React.Component {
                             data-is-active={currentFrame == k}
                             data-in-animation={
                                 isAnimationInProgress &&
-                                frameInAnimation == k
+                                currentFrame == k
                             }
                             onClick={this.handleChooseFrame}
                         />
@@ -143,20 +142,21 @@ class App extends React.Component {
         const {frames} = this.props
 
         const animationHandler = () => {
-            let {frameInAnimation, isAnimationInProgress} = this.state
-            const frame = frames[frameInAnimation]
+            let {currentFrame} = this.props
+            let {isAnimationInProgress} = this.state
+            const frame = frames[currentFrame]
             let timeout;
 
             nativeUtils.port.write(transformFrameToBin(frame), () => {
-                frameInAnimation++
-                if(frameInAnimation >= frames.length)
-                    frameInAnimation = 0
+                currentFrame++
+                if(currentFrame >= frames.length)
+                    currentFrame = 0
                 
                 if(!isAnimationInProgress)
                     return clearTimeout(timeout)
 
                 timeout = setTimeout(() => {
-                    this.setState({frameInAnimation})
+                    this.props.changeCurrentFrame(currentFrame)
                     animationHandler()
                 }, 250)
             })
@@ -167,7 +167,6 @@ class App extends React.Component {
     handleStopAnimation() {
         this.setState({
             isAnimationInProgress: false,
-            frameInAnimation: 0
         })
     }
     handleSaveAsFile() {
